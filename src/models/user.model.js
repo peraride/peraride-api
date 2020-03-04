@@ -11,14 +11,14 @@ var path = require('path');
 var hbs = require('nodemailer-express-handlebars');
 //attach the plugin to the nodemailer transporter
 
-
+// FIXME fix this issue with email templates
 // href="${config.hostname}/api/auth/confirm?key=${this.activationKey}"
 transporter.use("compile",hbs({
   viewEngine:{
-     partialsDir: config.hbs.partialsDir,
+     partialsDir: path.resolve('./src/views/layouts'),
      defaultLayout:""
  },
-viewPath: config.hbs.viewPath,
+viewPath: path.resolve('./src/views/layouts'),
 extName:".hbs"
 }));
 
