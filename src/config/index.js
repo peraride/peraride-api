@@ -1,0 +1,22 @@
+require('dotenv').config() // load .env file
+
+module.exports = {
+  port: process.env.PORT,
+  app: process.env.APP,
+  env: process.env.NODE_ENV,
+  secret: process.env.APP_SECRET,
+  hostname: process.env.HOSTNAME,
+  mongo: {
+    uri: process.env.MONGOURI,
+    testURI: process.env.MONGOTESTURI
+  },
+  transporter: {
+    service: process.env.TRANSPORTER_SERVICE,
+    email: process.env.TRANSPORTER_EMAIL,
+    password: process.env.TRANSPORTER_PASSWORD
+  },
+  hbs: {
+      partialsDir: process.env.EMAIL_HBS_PARTIALDIR,
+      viewPath: process.env.EMAIL_HBS_VIEWPATH
+  }
+}
