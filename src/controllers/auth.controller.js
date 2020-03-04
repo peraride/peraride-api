@@ -71,7 +71,7 @@ exports.confirm = async (req, res, next) => {
       { 'activationKey': req.query.key },
       { 'active': true }
     )
-    res.writeHead(301,{Location: 'http://localhost:8000/'});
+    res.writeHead(301,{Location: config.hostname});
     res.end();
   } catch (error) {
     next(error)
