@@ -13,12 +13,12 @@ mongoose.connection.on('error', (err) => {
   process.exit(1)
 })
 
-if (config.env === 'dev') {
+if (config.env === 'development') {
   mongoose.set('debug', true)
 }
 
 exports.connect = () => {
-  var mongoURI = (config.env === 'prod' || 'dev' ? config.mongo.uri : config.mongo.testURI)
+  var mongoURI = (config.env === 'production' || 'development' ? config.mongo.uri : config.mongo.testURI)
 
   mongoose.connect(mongoURI, {
     keepAlive: 1,
