@@ -2,9 +2,10 @@ const nodemailer = require('nodemailer')
 const config = require('../config')
 
 const transporter = nodemailer.createTransport({
-  service: config.transporter.service,
+  host: config.transporter.host,
+  port: config.transporter.port,
   auth: {
-    user: config.transporter.email,
+    user: config.transporter.username,
     pass: config.transporter.password
   }
 })

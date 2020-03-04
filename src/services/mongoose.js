@@ -22,10 +22,10 @@ exports.connect = () => {
 
   mongoose.connect(mongoURI, {
     keepAlive: 1,
-    useNewUrlParser: true
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true
   })
-
-  mongoose.set('useCreateIndex', true)
 
   return mongoose.connection
 }
