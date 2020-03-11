@@ -155,7 +155,7 @@ exports.lock = async (req, res, next) => {
 
       try {
         
-        if (err) throw new APIError(`No Dock associated with dock_id ID ${dock_id}`, httpStatus.NOT_FOUND)
+        if (!dock) throw new APIError(`No Dock associated with dock_id ID ${dock_id}`, httpStatus.NOT_FOUND)
   
           // If Dock is Free only this will execute
         if(dock.dock_state  == 'FREE'){

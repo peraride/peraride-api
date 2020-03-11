@@ -78,12 +78,14 @@ router.delete('/bike/delete',auth(['admin']),bikeController.delete);
 router.post('/bike/update',auth(['admin']),bikeController.update);
 
 
+// REMINDER: Removed auth middleware for these two api's for POC Demo
 
 // Request to Unlock for a bike by Station dock
-router.get('/dock/unlock', auth(['user']),dockController.unlock)
+// router.get('/dock/unlock', auth(['user']),dockController.unlock)
+router.get('/dock/unlock',dockController.unlock)
 
 // Request to Lock a bike on a dock By Station
-router.put('/dock/lock', auth(['user']),dockController.lock)
+router.put('/dock/lock',dockController.lock)
 
 
 
