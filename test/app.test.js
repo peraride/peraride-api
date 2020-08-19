@@ -10,21 +10,7 @@ const should = chai.should()
 
 chai.use(chaiHttp)
 
-describe('Application', () => {
-  it('It should return HTTP Internal Error for empty post login api call', (done) => {
-    chai
-      .request(app)
-      .post('/api/auth/login')
-      .end((err, res) => {
-        res.should.have.status(500)
-        res.body.should.be.a('object')
-        res.body.should.have.property('message')
-        res.body.message.should.be.eql('Email must be provided for login')
-        done()
-      })
-  })
-
-
+describe('Invalid API test', () => {
 
   it('It should return HTTP NOTFOUND', (done) => {
     chai
@@ -39,7 +25,7 @@ describe('Application', () => {
 
 
 /* LOGIN TEST*/
-describe('/POST login test', () => {
+describe('Login API test', () => {
 
 
   it('it should return no existing user for invalid email', done => {
@@ -126,7 +112,7 @@ describe('/POST login test', () => {
 
 
 /* REGISTRATION TEST*/
-describe('/POST registration test', () => {
+describe('Registration API test', () => {
 
 
   it('it should return validation error for missing info', done => {
@@ -209,7 +195,7 @@ describe('/POST registration test', () => {
 
 
 /* UPDATE & DELETE USER TEST*/
-describe('/POST update+delete test', () => {
+describe('Update+Delete API test', () => {
 
 
   it('it should return validation error for missing info', done => {
@@ -289,7 +275,7 @@ describe('/POST update+delete test', () => {
 })
 
 /* Authentication Test*/
-describe('Access restricted api', () => {
+describe('Authentication Test for API"s', () => {
 
   it('it should return unauthorized for illegal access to a restricted api only for admins', done => {
 
@@ -321,6 +307,43 @@ describe('Access restricted api', () => {
       done()
      })
    }).timeout(25000)
+
+
+   it('it should return un-authorized for users accessing restricted API"s', done => {
+    let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZTVmYmFkMDRmOTAyNDAwMDQ3NWY1Y2QiLCJpYXQiOjE1OTc4NDIzMjJ9.ZM0-dyi-IpzUUORtrWIq2o8-bPObZfnA19X9je4juHo"
+    let baseurl ="peraride-api.herokuapp.com"
+  chai
+   .request(baseurl)
+   .get('/api/auth/findall')
+   .set('Accept', 'application/json')
+   .set({'Authorization':`Bearer ${token}`})
+   .end((err, res) => {
+    res.should.have.status(403)
+    res.body.should.be.a('object')
+    done()
+   })
+ }).timeout(25000)
+
+
+
+ it('it should return authorized for users accessing with valid token', done => {
+  let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZTVmYmFiOTRmOTAyNDAwMDQ3NWY1Y2MiLCJpYXQiOjE1OTc4MTY5MDV9.kjC6qPRueC5_WIhudj5a9D3bXkBfcCIG2JR1u9lt5nM"
+  let baseurl ="peraride-api.herokuapp.com"
+chai
+ .request(baseurl)
+ .get('/api/auth/dock/locate')
+ .set('Accept', 'application/json')
+ .set({'Authorization':`Bearer ${token}`})
+ .query({station_id: 1111}) // /station id 1111
+ .end((err, res) => {
+  res.should.have.status(200)
+  res.body.should.be.a('object')
+  res.body.should.have.property('docks')
+  res.body.docks.should.be.a('array')
+  done()
+ })
+}).timeout(25000)
+
 
 })
 
