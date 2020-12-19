@@ -148,7 +148,7 @@ exports.lock = async (req, res, next) => {
                                     httpStatus.NOT_FOUND
                                 );
 
-                                if(bike.current_user != null){
+                                if(bike.current_user != null && bike.current_user != ""){
                                     const user = await User.findById(bike.current_user);
 
                                     if (user){
