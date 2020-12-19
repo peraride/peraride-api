@@ -72,6 +72,7 @@ router.post('/bike/update', auth(['admin']), bikeController.update);
 router.get('/dock/unlock', dockController.unlock);
 
 // Request to Lock a bike on a dock By Station
+
 router.post('/dock/lock', dockController.lock);
 
 module.exports = router;
