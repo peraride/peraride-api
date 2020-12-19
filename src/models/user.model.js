@@ -1,11 +1,11 @@
-'use strict'
-const mongoose = require('mongoose')
-const bcrypt = require('bcrypt-nodejs')
-const httpStatus = require('http-status')
-const APIError = require('../utils/APIError')
-const transporter = require('../services/transporter')
-const config = require('../config')
-const Schema = mongoose.Schema
+'use strict';
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt-nodejs');
+const httpStatus = require('http-status');
+const APIError = require('../utils/APIError');
+const transporter = require('../services/transporter');
+const config = require('../config');
+const Schema = mongoose.Schema;
 var path = require('path');
 //reference the plugin
 var hbs = require('nodemailer-express-handlebars');
@@ -13,195 +13,184 @@ var hbs = require('nodemailer-express-handlebars');
 
 // FIXME fix this issue with email templates
 // href="${config.hostname}/api/auth/confirm?key=${this.activationKey}"
-transporter.use("compile",hbs({
-  viewEngine:{
-     partialsDir: path.resolve('./src/views/layouts'),
-     defaultLayout:""
- },
-viewPath: path.resolve('./src/views/layouts'),
-extName:".hbs"
-}));
+transporter.use(
+    'compile',
+    hbs({
+        viewEngine: {
+            partialsDir: path.resolve('./src/views/layouts'),
+            defaultLayout: ''
+        },
+        viewPath: path.resolve('./src/views/layouts'),
+        extName: '.hbs'
+    })
+);
 
-var updateFlag = false
+var updateFlag = false;
 
-const roles = [
-  'user', 'admin', 'station'
-]
+const roles = ['user', 'admin', 'station'];
 
-const userSchema = new Schema({
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 4,
-    maxlength: 128
-  },
-  mobile:{
-    type: String,
-    minlength: 10,
-    maxlength: 10
-  },
-  age:{
-
-    type: Number,
-    min: 18,
-    max:65
-    
-  },
-  name: {
-    type: String,
-    maxlength: 50
-  },
-  activationKey: {
-    type: String,
-    unique: true
-  },
-  active: {
-    type: Boolean,
-    default: false
-  },
-  role: {
-    type: String,
-    default: 'user',
-    enum: roles
-  },
-  currentBike:
-    [{ 
-      type: Schema.Types.ObjectId, 
-      ref: 'Bike',
-      max:1 
-   }]
-  
-}, {
-  timestamps: true
-})
-
-userSchema.pre('save', async function save (next) {
-
-  
-  try {
-
-    if (this.isNew) {
-
-      updateFlag = true
-
-    }else{
-      console.log('Inside User Post Save - Else ( document not new )')
-      updateFlag = false
-
-
+const userSchema = new Schema(
+    {
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+            lowercase: true
+        },
+        password: {
+            type: String,
+            required: true,
+            minlength: 4,
+            maxlength: 128
+        },
+        mobile: {
+            type: String,
+            minlength: 10,
+            maxlength: 10
+        },
+        age: {
+            type: Number,
+            min: 18,
+            max: 65
+        },
+        name: {
+            type: String,
+            maxlength: 50
+        },
+        activationKey: {
+            type: String,
+            unique: true
+        },
+        active: {
+            type: Boolean,
+            default: false
+        },
+        role: {
+            type: String,
+            default: 'user',
+            enum: roles
+        },
+        currentBike: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'Bike',
+                max: 1
+            }
+        ]
+    },
+    {
+        timestamps: true
     }
+);
 
-
-    if (!this.isModified('password')) {
-      return next()
-    }
-
-    this.password = bcrypt.hashSync(this.password)
-
-    return next()
-
-  } catch (error) {
-    return next(error)
-  }
-})
-
-
-userSchema.post('save', async function saved (doc, next) {
-
-  
-  if(updateFlag){
-
-      try {
-        //send mail with options
-        var mailOptions = {
-          from: 'admin@peraride.com',
-          to: this.email,
-          subject: 'Account Verification',
-          template: 'email',
-          context: {
-              link: `${config.hostname}/api/auth/confirm?key=${this.activationKey}`
-          }
+userSchema.pre('save', async function save(next) {
+    try {
+        if (this.isNew) {
+            updateFlag = true;
+        } else {
+            console.log('Inside User Post Save - Else ( document not new )');
+            updateFlag = false;
         }
 
-        // console.log('Here')
+        if (!this.isModified('password')) {
+            return next();
+        }
 
+        this.password = bcrypt.hashSync(this.password);
 
-        transporter.sendMail(mailOptions, function (error, info) {
-          if (error) {
-            console.log(error)
-          } else {
-            console.log('Email sent: ' + info.response)
-          }
-        })
-
-        return next()
-      } catch (error) {
-        return next(error)
-      }
-
-    }else{
-      return next()
+        return next();
+    } catch (error) {
+        return next(error);
     }
+});
 
+userSchema.post('save', async function saved(doc, next) {
+    if (updateFlag) {
+        try {
+            //send mail with options
+            var mailOptions = {
+                from: 'admin@peraride.com',
+                to: this.email,
+                subject: 'Account Verification',
+                template: 'email',
+                context: {
+                    link: `${config.hostname}/api/auth/confirm?key=${this.activationKey}`
+                }
+            };
 
-})
+            // console.log('Here')
+
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log('Email sent: ' + info.response);
+                }
+            });
+
+            return next();
+        } catch (error) {
+            return next(error);
+        }
+    } else {
+        return next();
+    }
+});
 
 userSchema.method({
-  transform () {
-    const transformed = {}
-    const fields = ['id', 'name', 'email', 'createdAt', 'role']
+    transform() {
+        const transformed = {};
+        const fields = ['id', 'name', 'email', 'createdAt', 'role'];
 
-    fields.forEach((field) => {
-      transformed[field] = this[field]
-    })
+        fields.forEach((field) => {
+            transformed[field] = this[field];
+        });
 
-    return transformed
-  },
+        return transformed;
+    },
 
-  passwordMatches (password) {
-    return bcrypt.compareSync(password, this.password)
-  }
-})
+    passwordMatches(password) {
+        return bcrypt.compareSync(password, this.password);
+    }
+});
 
 userSchema.statics = {
-  roles,
+    roles,
 
-  checkDuplicateEmailError (err) {
-    if (err.code === 11000) {
-      var error = new Error('Email already taken')
-      error.errors = [{
-        field: 'email',
-        location: 'body',
-        messages: ['Email already taken']
-      }]
-      error.status = httpStatus.CONFLICT
-      return error
+    checkDuplicateEmailError(err) {
+        if (err.code === 11000) {
+            var error = new Error('Email already taken');
+            error.errors = [
+                {
+                    field: 'email',
+                    location: 'body',
+                    messages: ['Email already taken']
+                }
+            ];
+            error.status = httpStatus.CONFLICT;
+            return error;
+        }
+
+        return err;
+    },
+
+    async findAndGenerateToken(payload) {
+        const { email, password } = payload;
+        if (!email) throw new APIError('Email must be provided for login');
+
+        const user = await this.findOne({ email }).exec();
+        if (!user)
+            throw new APIError(`No user associated with ${email}`, httpStatus.NOT_FOUND);
+
+        const passwordOK = await user.passwordMatches(password);
+
+        if (!passwordOK) throw new APIError(`Password mismatch`, httpStatus.UNAUTHORIZED);
+
+        if (!user.active)
+            throw new APIError(`User not activated`, httpStatus.UNAUTHORIZED);
+
+        return user;
     }
+};
 
-    return err
-  },
-
-  async findAndGenerateToken (payload) {
-    const { email, password } = payload
-    if (!email) throw new APIError('Email must be provided for login')
-
-    const user = await this.findOne({ email }).exec()
-    if (!user) throw new APIError(`No user associated with ${email}`, httpStatus.NOT_FOUND)
-
-    const passwordOK = await user.passwordMatches(password)
-
-    if (!passwordOK) throw new APIError(`Password mismatch`, httpStatus.UNAUTHORIZED)
-
-    if (!user.active) throw new APIError(`User not activated`, httpStatus.UNAUTHORIZED)
-
-    return user
-  }
-}
-
-module.exports = mongoose.model('User', userSchema)
+module.exports = mongoose.model('User', userSchema);
