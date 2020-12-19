@@ -16,26 +16,26 @@ exports.locate = async (req, res, next) => {
     try {
         console.log('Here inside locate');
         if (Object.keys(req.query).length === 0)
-            throw new APIError(`Station ID Field can not be empty`, httpStatus.NOT_FOUND);
+        throw new APIError(`Station ID Field can not be empty`, httpStatus.NOT_FOUND);
 
         Station.findOne({ station_id: req.query.station_id })
-            .populate({
-                path: 'docks',
-                // Get Bikes of Docks - populate the 'bike' array for dock
-                populate: { path: 'bike', options: { limit: 1 } }
-            })
-            .exec((err, station) => {
-                try {
-                    if (!station)
-                        throw new APIError(
-                            `No station associated with id ${req.query.station_id}`,
-                            httpStatus.NOT_FOUND
-                        );
-                    res.json({ docks: station.docks });
-                } catch (error) {
-                    next(error);
-                }
-            });
+        .populate({
+            path: 'docks',
+            // Get Bikes of Docks - populate the 'bike' array for dock
+            populate: { path: 'bike', options: { limit: 1 } }
+        })
+        .exec((err, station) => {
+            try {
+                if (!station)
+                throw new APIError(
+                    `No station associated with id ${req.query.station_id}`,
+                    httpStatus.NOT_FOUND
+                );
+                res.json({ docks: station.docks });
+            } catch (error) {
+                next(error);
+            }
+        });
     } catch (error) {
         return next(error);
     }
@@ -61,7 +61,7 @@ exports.register = async (req, res, next) => {
 exports.unlock = async (req, res, next) => {
     try {
         if (Object.keys(req.query).length === 0)
-            throw new APIError(`Dock ID Field can not be empty`, httpStatus.NOT_FOUND);
+        throw new APIError(`Dock ID Field can not be empty`, httpStatus.NOT_FOUND);
 
         const station_id = req.user;
         const dock_id = req.query.dock_id;
@@ -70,14 +70,14 @@ exports.unlock = async (req, res, next) => {
 
         if (dock) {
             if (dock.dock_state === 'FREE')
-                throw new APIError(`Dock is Empty !`, httpStatus.NOT_FOUND);
+            throw new APIError(`Dock is Empty !`, httpStatus.NOT_FOUND);
 
             const bike = await Bike.findById(dock.bike);
             if (!bike)
-                throw new APIError(
-                    `No Bike associated with ${bikeID}`,
-                    httpStatus.NOT_FOUND
-                );
+            throw new APIError(
+                `No Bike associated with ${bikeID}`,
+                httpStatus.NOT_FOUND
+            );
 
             console.log(bike);
 
@@ -121,18 +121,18 @@ exports.lock = async (req, res, next) => {
         const rfid_code = req.body.rfid_code;
 
         if (!dock_id || !rfid_code)
-            throw new APIError(
-                `dock_id and rfid_code must be provided`,
-                httpStatus.NOT_FOUND
-            );
+        throw new APIError(
+            `dock_id and rfid_code must be provided`,
+            httpStatus.NOT_FOUND
+        );
 
         await Dock.findOne({ dock_id: dock_id }, async function (err, dock) {
             try {
                 if (!dock)
-                    throw new APIError(
-                        `No Dock associated with dock_id ID ${dock_id}`,
-                        httpStatus.NOT_FOUND
-                    );
+                throw new APIError(
+                    `No Dock associated with dock_id ID ${dock_id}`,
+                    httpStatus.NOT_FOUND
+                );
 
                 // If Dock is Free only this will execute
                 if (dock.dock_state == 'FREE') {
@@ -143,22 +143,25 @@ exports.lock = async (req, res, next) => {
                                 console.log('Dock eka hari, bike ekath dan hari');
 
                                 if (err)
-                                    throw new APIError(
-                                        `No Bike associated with the given RFID_CODE ${rfid_code}`,
-                                        httpStatus.NOT_FOUND
-                                    );
+                                throw new APIError(
+                                    `No Bike associated with the given RFID_CODE ${rfid_code}`,
+                                    httpStatus.NOT_FOUND
+                                );
 
                                 const user = await User.findById(bike.current_user);
 
-                                if (!user)
-                                    throw new APIError(
-                                        `No User associated with user_id ${bike.current_user}`,
-                                        httpStatus.NOT_FOUND
-                                    );
+                                if (user){
+                                    //Updating User
+                                    user.currentBike = null;
+                                    user.save();
+                                }
 
-                                //Updating User
-                                user.currentBike = null;
-                                user.save();
+                                /*
+                                if (!user)
+                                throw new APIError(
+                                `No User associated with user_id ${bike.current_user}`,
+                                httpStatus.NOT_FOUND);
+                                */
 
                                 //Updating Bike
                                 bike.dock_id = dock_id;
